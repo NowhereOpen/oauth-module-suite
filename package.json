@@ -1,0 +1,25 @@
+{
+  "name": "gyst-credential-module-suite",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "moment": "^2.24.0",
+    "oauth": "^0.9.15",
+    "twitter": "^1.7.1",
+    "url-join": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/oauth": "^0.9.1",
+    "@types/twitter": "^1.7.0",
+    "@types/url-join": "^4.0.0",
+    "tsconfig-paths": "^3.9.0"
+  }
+}
