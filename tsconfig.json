@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "outDir": "./build",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "baseUrl": "./",
@@ -8,6 +9,8 @@
     "paths": {
       "~/*": ["./*"]
     },
+    "declaration": true,
     "strict": true
-  }
+  },
+  "include": ["src"]
 }

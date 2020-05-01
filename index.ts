@@ -1,3 +1,7 @@
+export * from "./src/cred-module-base/base"
+export * from "./src/cred-module-base/oauth1-base"
+export * from "./src/cred-module-base/oauth2-base"
+
 export { Bitbucket } from "./src/cred-modules/bitbucket-oauth2"
 export { Facebook } from "./src/cred-modules/facebook-oauth2"
 export { Github } from "./src/cred-modules/github-oauth2"
