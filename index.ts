@@ -10,3 +10,5 @@ export { Reddit } from "./src/cred-modules/reddit-oauth2"
 export { Trello } from "./src/cred-modules/trello-oauth1"
 export { Twitch } from "./src/cred-modules/twitch-oauth2"
 export { Twitter } from "./src/cred-modules/twitter-oauth1"
+
+export * from "./src/refresh-token-if-fail-task"
