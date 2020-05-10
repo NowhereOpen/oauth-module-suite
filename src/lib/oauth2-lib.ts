@@ -33,7 +33,7 @@ export async function requestToken(cred:Cred, token_request:TokenRequest, code:s
   return await axios(axios_config)
 }
 
-export function isCallbackUrlValid(url:string):boolean {
+export function isOAuth2CallbackUrlValid(url:string):boolean {
   let _url = new URL(url)
   const lookup_value = _url.searchParams.get("code")
   const contains_invalid_value = [undefined, null, ""].includes(lookup_value)

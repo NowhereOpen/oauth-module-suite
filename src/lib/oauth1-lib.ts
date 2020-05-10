@@ -2,7 +2,7 @@ import { OAuth } from 'oauth';
 
 export type TokenResponse = { token:string, token_secret:string }
 
-export function isCallbackUrlValid(url:string):boolean {
+export function isOAuth1CallbackUrlValid(url:string):boolean {
   let _url = new URL(url)
   const lookup_value = _url.searchParams.get("oauth_verifier")
   const contains_invalid_value = [undefined, null, ""].includes(lookup_value)

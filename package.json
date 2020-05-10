@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "ttsc": "ttsc"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +23,7 @@
     "@types/oauth": "^0.9.1",
     "@types/twitter": "^1.7.0",
     "@types/url-join": "^4.0.0",
-    "tsconfig-paths": "^3.9.0"
+    "tsconfig-paths": "^3.9.0",
+    "ttypescript": "^1.5.10"
   }
 }

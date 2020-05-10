@@ -1,5 +1,12 @@
 import { OAuthBaseClass } from "./base"
-import { getAuthorizationUrl, requestToken, isCallbackUrlValid, getCodeQueryParam } from "~/src/lib/oauth2-lib"
+import {
+  getAuthorizationUrl,
+  requestToken,
+  isOAuth2CallbackUrlValid,
+  getCodeQueryParam,
+  TokenRequestMethod,
+  TokenRequestDataType
+} from "~/src/lib/oauth2-lib"
 
 /**
  * Responsible for getting the access token.
@@ -27,8 +34,6 @@ type Cred = {
   client_secret: string
 }
 
-export type TokenRequestMethod = "POST"|"GET"
-export type TokenRequestDataType = "FORM_DATA"|"QUERY_PARAM"|"URL_ENCODED"
 export type TokenRequestDetails = {
   method:TokenRequestMethod
   data_type:TokenRequestDataType
@@ -74,7 +79,7 @@ export abstract class OAuth2 extends OAuthBaseClass {
    */
   async getTokenResponse(url:string):Promise<any>
   {
-    if(! isCallbackUrlValid(url)) {
+    if(! isOAuth2CallbackUrlValid(url)) {
       throw Error()
     }
 

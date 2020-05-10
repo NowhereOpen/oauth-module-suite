@@ -1,6 +1,6 @@
 import { OAuthBaseClass } from "./base"
 import {
-  TokenResponse, isCallbackUrlValid, getOAuthVerifier,
+  TokenResponse, isOAuth1CallbackUrlValid, getOAuthVerifier,
   createOAuthHelper, requestRequestToken, getAccessToken
 } from "~/src/lib/oauth1-lib"
 
@@ -77,7 +77,7 @@ export abstract class OAuth1a extends OAuthBaseClass {
       throw Error(`'request_token' and 'request_token_secret' must be set. Set them manually or call 'requestRequestToken'.`)
     }
 
-    if(! isCallbackUrlValid(url)) {
+    if(! isOAuth1CallbackUrlValid(url)) {
       throw Error("The passed url doesn't contain necessary query parameter 'oauth_verifier'.")
     }
 
