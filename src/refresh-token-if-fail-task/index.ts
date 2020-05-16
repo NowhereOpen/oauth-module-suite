@@ -12,6 +12,8 @@ import { OAuthBaseClass } from "~/src/cred-module-base/base"
  */
 export type TaskCb = (token_response:any) => Promise<any>
 
+export type GetTokenData = () => Promise<any>|any
+
 export class TokenFail extends Error {
   error:Error
   msg:string|undefined
@@ -47,26 +49,39 @@ export class ErrorOnRefreshRequest extends Error {
   }
 }
 
-export class RefreshTokenIfFailTask {
-  token_response:any
+export abstract class RefreshTokenIfFailTask {
   cred_module:OAuthBaseClass
-  task:TaskCb
 
   is_retry = false
 
-  constructor(token_response:any, cred_module:OAuthBaseClass, task:TaskCb) {
-    this.token_response = token_response
+  /**
+   * 2020-05-14 09:32
+   * The child class would need to take more parameters that can be
+   * used by the abstract methods. For example, `getTokenData` may
+   * require values required to query entries from the user app's
+   * data base.
+   */
+  constructor(cred_module:OAuthBaseClass) {
     this.cred_module = cred_module
-    this.task = task
   }
+
+  abstract getTokenData():Promise<any>
+  abstract onRefreshToken(refresh_token_result:any):Promise<void>
+  /**
+   * 2020-05-14 09:37
+   * COULD use the token_data returned by `this.getTokenData`
+   */
+  abstract doTask(token_data:any):Promise<void>
 
   async useToken() {
     return await this.refreshTokenIfFail()
   }
 
   async refreshTokenIfFail():Promise<any> {
+    const token_data = await this.getTokenData()
+
     try {
-      return await this.task(this.token_response)
+      return await this.doTask(token_data)
     }
     catch(e) {
       if(this.is_retry) {
@@ -74,12 +89,22 @@ export class RefreshTokenIfFailTask {
         throw new ErrorAfterRefreshing(e)
       }
       else {
+        /**
+         * 2020-05-14 09:24
+         * Refresh token
+         */
         if((this.isThrowOnErrorBeforeRefreshCb(e)) == true) {
           console.log(`You can change the behavior by overriding 'isThrowOnErrorBeforeRefreshCb' method.`)
           throw new ErrorBeforeRefreshing(e)
         }
 
-        await this.refreshToken()
+        const refresh_token_result = await this.refreshToken(token_data)
+        /**
+         * 2020-05-14 09:25
+         * 
+         * Store the refreshed token and update the old entry or something.
+         */
+        await this.onRefreshToken(refresh_token_result)
         
         this.is_retry = true
         return await this.refreshTokenIfFail()
@@ -87,9 +112,24 @@ export class RefreshTokenIfFailTask {
     }
   }
 
-  async refreshToken():Promise<any> {
+  async refreshToken(token_data:any):Promise<any> {
     try {
-      return await this.cred_module.refreshToken(this.token_response)
+      /**
+       * 2020-05-14 09:55
+       * 
+       * TODO
+       * Module like `github` returns the full 'axios response' data structure ... and that's how it
+       * is from the old GYST code as well. What's happening?
+       * 
+       * Remove this comment after this is resolved.
+       * 
+       * 2020-05-14 10:16
+       * 
+       * I think the reason for not having encountered any error is that when I login to GYST using
+       * Github account, it just renews the token data and I haven't used GYST for a long time that
+       * it requires refreshing the token
+       */
+      return await this.cred_module.refreshToken(token_data)
     }
     catch(e) {
       console.log(`Error while refreshing the token.`)
@@ -110,5 +150,8 @@ export class RefreshTokenIfFailTask {
     return e instanceof TokenFail
   }
 
-  async onErrorAfterRefreshCb(e:Error): Promise<void> {}
+  async onErrorAfterRefreshCb(e:Error): Promise<void> {
+    console.error(`Error after refreshing the token:`)
+    console.error(e)
+  }
 }

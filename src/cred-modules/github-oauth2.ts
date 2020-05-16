@@ -36,34 +36,8 @@ export class Github extends OAuth2 {
     )
   }
 
-  /**
-   * Github sends a string type that can be parsed with `querystring` module
-   * when requesting a token, but returns JSON when refreshing the token.
-   * 
-   * @param url 
-   */
-  private parseTokenResponse(token_response:any) {
-    if(typeof token_response == "string") {
-      const parsed_token_response = querystring.parse(token_response);
-      return parsed_token_response
-    }
-    else {
-      return token_response
-    }
-  }
-
-  private getAccessTokenFromTokenResponse(token_response:any) {
-    if(typeof token_response == "string") {
-      const parsed_token_response = this.parseTokenResponse(token_response)
-      return parsed_token_response["access_token"]
-    }
-    else {
-      return token_response.token
-    }
-  }
-
-  async revokeToken(token_response:any) {
-    const access_token = this.getAccessTokenFromTokenResponse(token_response)
+  async revokeToken(token_data:any) {
+    const access_token = getAccessTokenFromTokenResponse(token_data)
     return await axios.delete(`https://api.github.com/applications/${this.cred.client_id}/tokens/${access_token}`, {
       auth: {
         username: this.cred.client_id,
@@ -75,8 +49,8 @@ export class Github extends OAuth2 {
   /**
    * It's said that the github access_token don't expire but the following request works, response including the same token.
    */
-  async refreshToken(token_response:any) {
-    const access_token = this.getAccessTokenFromTokenResponse(token_response)
+  async refreshToken(token_data:any) {
+    const access_token = getAccessTokenFromTokenResponse(token_data)
     return await axios.get(`https://api.github.com/applications/${this.cred.client_id}/tokens/${access_token}`, {
       auth: {
         username: this.cred.client_id,
@@ -85,8 +59,8 @@ export class Github extends OAuth2 {
     })
   }
 
-  async getUserInfo(token_response:any) {
-    const access_token = this.getAccessTokenFromTokenResponse(token_response)
+  async getUserInfo(token_data:any) {
+    const access_token = getAccessTokenFromTokenResponse(token_data)
     const axios_config:any = {
       headers: {
         Authorization: `token ${access_token}`
@@ -108,7 +82,7 @@ export class Github extends OAuth2 {
   }
 
   async makeApiRequest(token_data:any, method:string, url:string, req_data?:any): Promise<any> {
-    const access_token = this.getAccessTokenFromTokenResponse(token_data)
+    const access_token = getAccessTokenFromTokenResponse(token_data)
     
     return await makeApiRequest(method, url, {
       baseURL: "https://api.github.com",
@@ -117,4 +91,13 @@ export class Github extends OAuth2 {
       }
     }, req_data)
   }
+}
+
+/**
+ * Github sends a string type that can be parsed with `querystring` module
+ * when requesting a token, but returns JSON when refreshing the token.
+ */
+function getAccessTokenFromTokenResponse(token_data:any) {
+  const parsed_token_response = querystring.parse(token_data);
+  return parsed_token_response["access_token"]
 }
