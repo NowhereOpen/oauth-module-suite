@@ -66,7 +66,21 @@ export abstract class RefreshTokenIfFailTask {
   }
 
   abstract getTokenData():Promise<any>
-  abstract onRefreshToken(refresh_token_result:any):Promise<void>
+  /**
+   * 2020-05-14 09:25
+   * 
+   * Store the refreshed token and update the old entry or something.
+   * 
+   * 2020-05-19 01:39
+   * Some services like Google and Reddit don't return the refresh
+   * token used in the request. In those cases, the returned refresh
+   * token response, and the 'token data' used in making the request
+   * should be merged or something before updating the DB.
+   *
+   * @param refresh_token_result 
+   * @param token_data 
+   */
+  abstract onRefreshToken(refresh_token_result:any, token_data?:any):Promise<void>
   /**
    * 2020-05-14 09:37
    * COULD use the token_data returned by `this.getTokenData`
@@ -99,12 +113,7 @@ export abstract class RefreshTokenIfFailTask {
         }
 
         const refresh_token_result = await this.refreshToken(token_data)
-        /**
-         * 2020-05-14 09:25
-         * 
-         * Store the refreshed token and update the old entry or something.
-         */
-        await this.onRefreshToken(refresh_token_result)
+        await this.onRefreshToken(refresh_token_result, token_data)
         
         this.is_retry = true
         return await this.refreshTokenIfFail()

@@ -90,17 +90,12 @@ export class Google extends OAuth2 {
   async refreshToken(token_response:any) {
     let refresh_token = token_response["refresh_token"]
 
-    const { data } = await this._refreshToken(refresh_token)
-
     /**
-     * The response returns without `refresh_token` field in it. To preserve the used AND VALID `refresh_token`
-     * then new response can be merged with the old response.
+     * 2020-05-19 01:28
      * 
-     * If this case exists in other service, then the higher level should not rely on `AxiosResponse` structure,
-     * and all service modules should return the data structure that needs to be saved in the storage.
+     * Note that the response doesn't include the used `refresh_token` for Google and Reddit refresh token API reseponse.
      */
-    const new_entry = Object.assign(token_response, data)
-    return new_entry
+    return await this._refreshToken(refresh_token)
   }
 
   /**

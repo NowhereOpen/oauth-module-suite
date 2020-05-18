@@ -44,6 +44,11 @@ export abstract class OAuthBaseClass {
    * 
    * Unless undefined or null, the returned value will be saved into the access token storage.
    * 
+   * 2020-05-19 01:20
+   * 
+   * Return axios response instead of `{ data }`. The client code should know about this. Else,
+   * the module can return `{ data, raw_response }` or something. 
+   * 
    * @param token_response 
    */
   public abstract refreshToken(token_response:object):Promise<AxiosResponse|undefined|any>;

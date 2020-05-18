@@ -92,19 +92,17 @@ export class Reddit extends OAuth2 {
       grant_type: "refresh_token"
     })
 
-    const { data } = await axios.post(url_str, fields, {
+    /**
+     * 2020-05-19 01:28
+     * 
+     * Note that the response doesn't include the used `refresh_token` for Google and Reddit refresh token API reseponse.
+     */
+    return await axios.post(url_str, fields, {
       auth: {
         username: this.cred.client_id,
         password: this.cred.client_secret
       }
     })
-
-    /**
-     * Google oauth2 also doesn't return 'refresh_token' in the response of the
-     * refresh token request. ... Need to update refreshToken to return the exact
-     * data structure that will be stored into the storage?
-     */
-    return Object.assign(token_response, data)
   }
 
   async makeApiRequest(token_data:any, method:string, url:string, req_data?:any): Promise<any> {
