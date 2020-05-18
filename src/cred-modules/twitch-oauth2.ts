@@ -58,11 +58,7 @@ export class Twitch extends OAuth2 {
   }
 
   async getUserInfo(token_data:any) {
-    const access_token = token_data["access_token"]
-    const { data } = await axios({
-      method: "get", url: "users", baseURL: "https://api.twitch.tv/helix",
-      headers: { Authorization: `Bearer ${access_token}` },
-    })
+    const { data } = await this.makeApiRequest(token_data, "get", "users")
     return data
   }
 
@@ -85,7 +81,10 @@ export class Twitch extends OAuth2 {
      */
     return await makeApiRequest(method, url, {
       baseURL: "https://api.twitch.tv/helix",
-      headers: { Authorization: `Bearer ${access_token}` },
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+        "Client-Id": this.cred.client_id
+      },
     }, req_data)
   }
 }
