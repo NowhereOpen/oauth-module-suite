@@ -53,14 +53,14 @@ export class Twitter extends OAuth1a {
           return reject(error)
         }
 
-        return resolve()
+        return resolve(response)
       })
     })
   }
 
   refreshToken() {
     // Does not expire
-    console.log("Twitter token does not expire.")
+    console.log("Twitter oauth module refreshToken. Twitter has no refresh token API.")
     return Promise.resolve(undefined)
   }
 
