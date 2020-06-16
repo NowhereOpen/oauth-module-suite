@@ -141,7 +141,7 @@ export abstract class RefreshTokenIfFailTask {
       return await this.cred_module.refreshToken(token_data)
     }
     catch(e) {
-      console.log(`Error while refreshing the token.`)
+      console.log(`Error caught while running \`await refreshToken\`.`)
       throw new ErrorOnRefreshRequest(e)
     }
   }

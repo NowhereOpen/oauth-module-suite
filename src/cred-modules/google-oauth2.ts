@@ -84,7 +84,6 @@ export class Google extends OAuth2 {
     let url = new URL("https://accounts.google.com/o/oauth2/revoke");
     url.searchParams.append("token", access_token);
     return axios.get(url.href)
-      .then(() => undefined)
   }
 
   async refreshToken(token_response:any) {
