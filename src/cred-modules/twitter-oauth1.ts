@@ -129,3 +129,25 @@ export async function makeRequest(method:"get"|"post"|"stream", url:string, twit
 
   return tweets
 }
+
+/**
+ * Twitter oauth1 token doesn't expire.
+ * 
+ * FeedGal or this oauth module doesn't use Axios for making Twitter API requests, so not
+ * using AxiosError type.
+ * 
+ * Invalid error:
+ * 
+ * ```
+ * [ { code: 89, message: 'Invalid or expired token.' } ]
+ * ```
+ * 
+ * Again, Twitter oauth1 token doesn't expire, so even though the message says "or
+ * expired", just keep the function name `isTokenInvalid`.
+ * 
+ * @param response The response returned by the `twitter` module
+ */
+export function isTokenInvalid(response:any) {
+  if(Array.isArray(response) && response.length > 0 && "code" in response[0] && response[0].code == 89) return true
+  return false
+}

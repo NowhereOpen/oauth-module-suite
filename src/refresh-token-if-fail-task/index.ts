@@ -14,7 +14,7 @@ export type TaskCb = (token_response:any) => Promise<any>
 
 export type GetTokenData = () => Promise<any>|any
 
-export class TokenFail extends Error {
+export class ThrownOnFirstTry extends Error {
   error:Error
   msg:string|undefined
 
@@ -25,34 +25,54 @@ export class TokenFail extends Error {
   }
 }
 
+/**
+ * 2020-06-18 18:01
+ * 
+ * Keeping trask of when the error was thrown is important because both
+ * invalid and expired tokens throw the same error. Not sure if it's the
+ * case for all services, but regardless if supporting multiple services
+ * there is no consistency and it's bad.
+ * 
+ * By keeping track of when the error was thrown, we can see that the
+ * token is not just 'expired' if the "invalid or expired" error is
+ * thrown after refreshing the token.
+ * 
+ * Also, if there is something completely wrong about refresh token, then
+ * we can tell so if the error was included as the `oringial_error` in
+ * `ErrorOnRefreshRequest`.
+ * 
+ * I did consider whether to not wrap the error in these named error. So,
+ * above is the good reason.
+ */
+// 
 export class ErrorAfterRefreshing extends Error {
-  e:Error
+  original_error:Error
   constructor(e:Error) {
     super("Error after refreshing the token and executing the task second time. Check your task code?");
-    this.e = e
+    this.original_error = e
   }
 }
 
 export class ErrorBeforeRefreshing extends Error {
-  e:Error
+  original_error:Error
   constructor(e:Error) {
     super("Error before refreshing the token.");
-    this.e = e
+    this.original_error = e
   }
 }
 
 export class ErrorOnRefreshRequest extends Error {
-  e:Error
+  original_error:Error
   constructor(e:Error) {
     super("Error while making the refresh token request.");
-    this.e = e
+    this.original_error = e
   }
 }
 
 export abstract class RefreshTokenIfFailTask {
   cred_module:OAuthBaseClass
 
-  is_retry = false
+  is_first_try = true
 
   /**
    * 2020-05-14 09:32
@@ -98,24 +118,19 @@ export abstract class RefreshTokenIfFailTask {
       return await this.doTask(token_data)
     }
     catch(e) {
-      if(this.is_retry) {
+      if(this.is_first_try == false) {
         await this.onErrorAfterRefreshCb(e)
         throw new ErrorAfterRefreshing(e)
       }
       else {
-        /**
-         * 2020-05-14 09:24
-         * Refresh token
-         */
-        if((this.isThrowOnErrorBeforeRefreshCb(e)) == true) {
-          console.log(`You can change the behavior by overriding 'isThrowOnErrorBeforeRefreshCb' method.`)
+        if((this.isThrowOnFirstTry(e)) == true) {
           throw new ErrorBeforeRefreshing(e)
         }
 
         const refresh_token_result = await this.refreshToken(token_data)
         await this.onRefreshToken(refresh_token_result, token_data)
         
-        this.is_retry = true
+        this.is_first_try = false
         return await this.refreshTokenIfFail()
       }
     }
@@ -147,16 +162,18 @@ export abstract class RefreshTokenIfFailTask {
   }
 
   /**
-   * 2020-04-24 09:49
+   * 2020-06-18 07:15
    * 
-   * Default is to check if the error is TokenFail instance.
+   * If the call back never throws `ThrownOnFirstTry` error because it doesn't know about this
+   * feature is to always refresh the token if an error occurs even when the error thrown can't
+   * be fixed by refreshing the token. For example, the user revoked already or the value used
+   * in the API request is just wrong.
    * 
-   * Returning `true` will throw error even before refreshing (You don't want to do that).
-   * Return `false` will always refresh the token on the error before refreshing even when
-   * that error may not be related to the token failure.
+   * Control this by throwing `ThrownOnFirstTry` error or overriding this method to return true
+   * to throw error, and not refresh the token on the error.
    */
-  isThrowOnErrorBeforeRefreshCb(e:Error) {
-    return e instanceof TokenFail
+  isThrowOnFirstTry(e:Error):boolean {
+    return e instanceof ThrownOnFirstTry
   }
 
   async onErrorAfterRefreshCb(e:Error): Promise<void> {

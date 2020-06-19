@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 import * as querystring from "querystring"
 
 import { OAuth2 } from "~/src/cred-module-base/oauth2-base"
@@ -120,4 +120,13 @@ export class Reddit extends OAuth2 {
       },
     }, req_data)
   }
+}
+
+/**
+ * https://github.com/reddit-archive/reddit/wiki/OAuth2
+ * 
+ * The page explains error during the oauth process but it seems like the API returns 401.
+ */
+export function isTokenInvalidOrExpired(e:AxiosError) {
+  return e.response?.status ==  401
 }

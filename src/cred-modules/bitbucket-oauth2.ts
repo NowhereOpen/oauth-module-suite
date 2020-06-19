@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 import * as querystring from "querystring"
 
 import { OAuth2 } from "~/src/cred-module-base/oauth2-base"
@@ -88,4 +88,15 @@ export class Bitbucket extends OAuth2 {
       }
     }, req_data)
   }
+}
+
+/**
+ * https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/#OAuthonBitbucketCloud-Refreshtokens
+ */
+export function isTokenInvalidOrExpired(e:AxiosError) {
+  if(e.response!.status == 401) {
+    return true
+  }
+
+  return false
 }

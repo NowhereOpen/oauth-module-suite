@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 import * as querystring from "querystring"
 
 import { OAuth2 } from "~/src/cred-module-base/oauth2-base"
@@ -139,4 +139,17 @@ export class Google extends OAuth2 {
       }
     }, req_data)
   }
+}
+
+/**
+ * YouTube:
+ * 
+ *   - https://developers.google.com/youtube/v3/docs/errors#youtube.api.RequestContextError
+ * 
+ * Google Calendar:
+ * 
+ *   - https://developers.google.com/calendar/v3/errors#401_invalid_credentials
+ */
+export function isTokenInvalidOrExpired(e:AxiosError) {
+  return e.response?.status == 401
 }

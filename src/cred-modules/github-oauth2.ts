@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 import * as querystring from "querystring"
 
 import { OAuth2 } from "~/src/cred-module-base/oauth2-base"
@@ -100,4 +100,11 @@ export class Github extends OAuth2 {
 function getAccessTokenFromTokenResponse(token_data:any) {
   const parsed_token_response = querystring.parse(token_data);
   return parsed_token_response["access_token"]
+}
+
+/**
+ * https://developer.github.com/v3/#failed-login-limit
+ */
+export function isTokenInvalidOrExpired(e:AxiosError) {
+  return e.response!.status == 401
 }

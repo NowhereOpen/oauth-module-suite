@@ -5,7 +5,7 @@
  * 
  * 
  */
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 
 import { OAuth1a } from "~/src/cred-module-base/oauth1-base"
 import { makeApiRequest } from "~/src/lib/api-request"
@@ -80,4 +80,13 @@ export class Trello extends OAuth1a {
       },
     }, req_data)
   }
+}
+
+/**
+ * Trello token doesn't expire
+ * 
+ * https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#revoking-tokens
+ */
+export function isTokenInvalid(e:AxiosError) {
+  return e.response?.status == 401
 }

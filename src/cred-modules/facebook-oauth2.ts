@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 
 import { OAuth2 } from "~/src/cred-module-base/oauth2-base"
 import { makeApiRequest } from "~/src/lib/api-request"
@@ -112,4 +112,32 @@ export class Facebook extends OAuth2 {
       params: { access_token }
     }, req_data)
   }
+}
+
+/**
+ * https://developers.facebook.com/docs/facebook-login/access-tokens/debugging-and-error-handling/?locale=en_US#expiredtokens
+ * 
+ * Doesn't mention 401 status code, but the actually response uses 401 status code and the response structure is:
+ * 
+ * ```
+ * {
+ *   error: {
+ *     message, code, error_subcode ... etc
+ *   }
+ * }
+ * ```
+ */
+//
+
+export function isTokenExpired(e:AxiosError) {
+  return isErrorSubcode(e, 436)
+}
+
+export function isInvalidToken(e:AxiosError) {
+  return isErrorSubcode(e, 460)
+}
+
+function isErrorSubcode(e:AxiosError, subcode:number) {
+  const error = e.response?.data.error
+  return error.code == 190 && error.error_subcode == subcode
 }

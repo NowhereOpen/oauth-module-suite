@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 import * as querystring from "querystring"
 
 import { OAuth2 } from "~/src/cred-module-base/oauth2-base"
@@ -87,4 +87,11 @@ export class Twitch extends OAuth2 {
       },
     }, req_data)
   }
+}
+
+/**
+ * https://dev.twitch.tv/docs/authentication/#refresh-in-response-to-server-rejection-for-bad-authentication
+ */
+export function isTokenInvalidOrExpired(e:AxiosError) {
+  return e.response?.status ==  401
 }
