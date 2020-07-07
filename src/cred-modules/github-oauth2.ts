@@ -106,5 +106,5 @@ function getAccessTokenFromTokenResponse(token_data:any) {
  * https://developer.github.com/v3/#failed-login-limit
  */
 export function isTokenInvalidOrExpired(e:AxiosError) {
-  return e.response!.status == 401
+  return e.response?.status == 401
 }
