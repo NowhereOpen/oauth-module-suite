@@ -16,6 +16,7 @@ import axios, { AxiosError } from "axios"
 
 import { OAuth2 } from "~/src/cred-module-base/oauth2-base"
 import { makeApiRequest } from "~/src/lib/api-request"
+import { getAccessTokenFromTokenDataSimple } from "~/src/lib/utility"
 
 export class Instagram extends OAuth2 {
   /**
@@ -70,8 +71,8 @@ export class Instagram extends OAuth2 {
      * 
      * Has no 'expires_in`
      */
-    const short_lived_token_response = await super.getTokenResponse(url)
-    const short_lived_access_token = short_lived_token_response.access_token
+    const short_lived_token_data = await super.getTokenResponse(url)
+    const short_lived_access_token = short_lived_token_data.access_token
 
     /**
      * 2020-08-01 03:50 
@@ -96,7 +97,7 @@ export class Instagram extends OAuth2 {
     return token_resposne
   }
 
-  async revokeToken(token_response:any) {
+  async revokeToken(token_data:any) {
     return {
       redirect_url: "https://www.instagram.com/accounts/manage_access/"
     };
@@ -105,8 +106,8 @@ export class Instagram extends OAuth2 {
   /**
    * Has a long term access token and a short one. The 
    */
-  async refreshToken(token_response:any) {
-    const access_token = token_response["access_token"]
+  async refreshToken(token_data:any) {
+    const access_token = getAccessTokenFromTokenData(token_data)
 
     /**
      * https://developers.facebook.com/docs/instagram-basic-display-api/reference/refresh_access_token
@@ -125,7 +126,7 @@ export class Instagram extends OAuth2 {
   }
 
   async getUserInfo(token_data:any) {
-    const access_token = token_data["access_token"]
+    const access_token = getAccessTokenFromTokenData(token_data)
     const { data } = await axios.get("https://graph.instagram.com/me", {
       params: { access_token: access_token, fields: "id,username,media_count,account_type" }
     })
@@ -143,7 +144,7 @@ export class Instagram extends OAuth2 {
   }
 
   async makeApiRequest(token_data:any, method:string, url:string, req_data?:any): Promise<any> {
-    const access_token = token_data["access_token"]
+    const access_token = getAccessTokenFromTokenData(token_data)
     
     return await makeApiRequest(method, url, {
       baseURL: "https://graph.instagram.com",
@@ -180,6 +181,10 @@ export class Instagram extends OAuth2 {
 //   return error.code == 190 && error.error_subcode == subcode
 // }
 
+export function getAccessTokenFromTokenData(token_data:any) {
+  return getAccessTokenFromTokenDataSimple(token_data)
+}
+
 async function main() {
   const instance = new Instagram(<string>process.env.CLIENT_ID, <string>process.env.CLIENT_SECRET, "https://localhost:3000/oauth/instagram/callback")
 
@@ -199,20 +204,20 @@ async function main() {
     }
   }
   
-  async function testUserInfo(token_response:any) {
-    const user_info = await instance.getUserInfo(token_response)
+  async function testUserInfo(token_data:any) {
+    const user_info = await instance.getUserInfo(token_data)
     console.log(user_info)
   }
 
-  async function testRefreshToken(token_response:any) {
-    const refresh_response = await instance.refreshToken(token_response)
+  async function testRefreshToken(token_data:any) {
+    const refresh_response = await instance.refreshToken(token_data)
     console.log(refresh_response)
   }
   
-  async function testMakeApiRequest(token_response:any) {
-    const response = await instance.makeApiRequest(token_response, "get", "/me/media", {
+  async function testMakeApiRequest(token_data:any) {
+    const response = await instance.makeApiRequest(token_data, "get", "/me/media", {
       params: {
-        access_token: token_response.access_token
+        access_token: token_data.access_token
       }
     })
 

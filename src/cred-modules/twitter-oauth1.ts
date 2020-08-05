@@ -34,9 +34,8 @@ export class Twitter extends OAuth1a {
     )
   }
 
-  async revokeToken(token_response:any) {
-    let access_token_key = token_response["oauth_token"]
-    let access_token_secret = token_response["oauth_token_secret"]
+  async revokeToken(token_data:any) {
+    const { access_token_key, access_token_secret } = getAccessTokenFromTokenDataForModule(token_data)
 
     let twitter = new TwitterModule({
       consumer_key: this.cred.consumer_key,
@@ -65,8 +64,7 @@ export class Twitter extends OAuth1a {
   }
 
   async getUserInfo(token_data:any) {
-    const access_token_key = token_data["oauth_token"]
-    const access_token_secret = token_data["oauth_token_secret"]
+    const { access_token_key, access_token_secret } = getAccessTokenFromTokenDataForModule(token_data)
 
     const twitter_cred = {
       consumer_key: this.cred.consumer_key,
@@ -88,8 +86,7 @@ export class Twitter extends OAuth1a {
   }
 
   async makeApiRequest(token_data:any, method:string, url:string, req_data?:any): Promise<any> {
-    const access_token_key = token_data["oauth_token"]
-    const access_token_secret = token_data["oauth_token_secret"]
+    const { access_token_key, access_token_secret } = getAccessTokenFromTokenDataForModule(token_data)
 
     const twitter_cred = {
       consumer_key: this.cred.consumer_key,
@@ -150,4 +147,17 @@ export async function makeRequest(method:"get"|"post"|"stream", url:string, twit
 export function isTokenInvalid(response:any) {
   if(Array.isArray(response) && response.length > 0 && "code" in response[0] && response[0].code == 89) return true
   return false
+}
+
+export function getAccessTokenFromTokenData(token_data:any) {
+  const { oauth_token, oauth_token_secret } = token_data
+  return { oauth_token, oauth_token_secret }
+}
+
+export function getAccessTokenFromTokenDataForModule(token_data:any) {
+  const { oauth_token, oauth_token_secret } = token_data
+  return {
+    access_token_key: oauth_token,
+    access_token_secret: oauth_token_secret
+  }
 }

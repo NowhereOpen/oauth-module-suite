@@ -26,8 +26,8 @@ export class Trello extends OAuth1a {
     )
   }
 
-  async revokeToken(token_response:any) {
-    let access_token:string = token_response["oauth_token"]
+  async revokeToken(token_data:any) {
+    let access_token:string = getAccessTokenFromTokenData(token_data)
     
     return await axios.delete(`https://api.trello.com/1/tokens/${access_token}`, {
       params: {
@@ -43,7 +43,7 @@ export class Trello extends OAuth1a {
   }
 
   async getUserInfo(token_data:any) {
-    const access_token = token_data["oauth_token"]
+    const access_token = getAccessTokenFromTokenData(token_data)
     const { data } = await axios({
       method: "get", url: "members/me",
       params: {
@@ -66,7 +66,7 @@ export class Trello extends OAuth1a {
   }
 
   async makeApiRequest(token_data:any, method:string, url:string, req_data?:any): Promise<any> {
-    const access_token = token_data["oauth_token"]
+    const access_token = getAccessTokenFromTokenData(token_data)
     
     /**
      * Different apis seems to have different conventions. YouTube uses `headers` and
@@ -89,4 +89,8 @@ export class Trello extends OAuth1a {
  */
 export function isTokenInvalid(e:AxiosError) {
   return e.response?.status == 401
+}
+
+export function getAccessTokenFromTokenData(token_data:any) {
+  return token_data.oauth_token
 }

@@ -3,6 +3,7 @@ import * as querystring from "querystring"
 
 import { OAuth2 } from "~/src/cred-module-base/oauth2-base"
 import { makeApiRequest } from "~/src/lib/api-request"
+import { getAccessTokenFromTokenDataSimple } from "~/src/lib/utility"
 
 export class Reddit extends OAuth2 {
   user_agent:string
@@ -44,7 +45,7 @@ export class Reddit extends OAuth2 {
   }
 
   async getUserInfo(token_data:any) {
-    const access_token = token_data["access_token"]
+    const access_token = getAccessTokenFromTokenData(token_data)
     const { data } = await axios({
       method: "get", baseURL: "https://oauth.reddit.com", url: "api/v1/me",
       headers: {
@@ -67,9 +68,9 @@ export class Reddit extends OAuth2 {
   /**
    * https://github.com/reddit-archive/reddit/wiki/OAuth2#manually-revoking-a-token
    */
-  async revokeToken(token_response:any) {
+  async revokeToken(token_data:any) {
     let url = new URL("https://www.reddit.com/api/v1/revoke_token");
-    let at = token_response["refresh_token"]
+    let at = token_data["refresh_token"]
     let fields = querystring.stringify({
       "token": at,
       "token_type_hint": "refresh_token"
@@ -84,8 +85,8 @@ export class Reddit extends OAuth2 {
     })
   }
 
-  async refreshToken(token_response:any) {
-    let refresh_token = token_response["refresh_token"]
+  async refreshToken(token_data:any) {
+    let refresh_token = token_data["refresh_token"]
     let url_str = "https://www.reddit.com/api/v1/access_token";
     let fields = querystring.stringify({
       refresh_token,
@@ -106,7 +107,7 @@ export class Reddit extends OAuth2 {
   }
 
   async makeApiRequest(token_data:any, method:string, url:string, req_data?:any): Promise<any> {
-    const access_token = token_data["access_token"]
+    const access_token = getAccessTokenFromTokenData(token_data)
     
     /**
      * Different apis seems to have different conventions. YouTube uses `headers` and
@@ -129,4 +130,8 @@ export class Reddit extends OAuth2 {
  */
 export function isTokenInvalidOrExpired(e:AxiosError) {
   return e.response?.status ==  401
+}
+
+export function getAccessTokenFromTokenData(token_data:any) {
+  return getAccessTokenFromTokenDataSimple(token_data)
 }

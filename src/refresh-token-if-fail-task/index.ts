@@ -3,14 +3,14 @@ import { OAuthBaseClass } from "~/src/cred-module-base/base"
 /**
  * 2020-04-24 10:46
  * 
- * `token_response` is passed from the same scope as the "task callback"
+ * `token_data` is passed from the same scope as the "task callback"
  * is passed. So I don't think even having any parameters is necessary.
  * 
  * For example, Github's token response is just a string, so it will pass
  * the token response, and define its task callback to use a parsed
  * access token.
  */
-export type TaskCb = (token_response:any) => Promise<any>
+export type TaskCb = (token_data:any) => Promise<any>
 
 export type GetTokenData = () => Promise<any>|any
 

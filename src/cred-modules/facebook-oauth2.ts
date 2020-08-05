@@ -2,6 +2,7 @@ import axios, { AxiosError } from "axios"
 
 import { OAuth2 } from "~/src/cred-module-base/oauth2-base"
 import { makeApiRequest } from "~/src/lib/api-request"
+import { getAccessTokenFromTokenDataSimple } from "~/src/lib/utility"
 
 export class Facebook extends OAuth2 {
   constructor(client_id:string, client_secret:string, redirect_uri:string) {
@@ -42,8 +43,8 @@ export class Facebook extends OAuth2 {
   /**
    * https://developers.facebook.com/docs/facebook-login/permissions/requesting-and-revoking/#revoking
    */
-  async revokeToken(token_response:any) {
-    let at = token_response["access_token"]
+  async revokeToken(token_data:any) {
+    let at = getAccessTokenFromTokenData(token_data)
     let url = new URL(`https://graph.facebook.com/me/permissions`)
     url.searchParams.append("access_token", at);
 
@@ -55,8 +56,8 @@ export class Facebook extends OAuth2 {
    * 
    * Doesn't refresh a 'long lived token' it seems, instead it gives an updated 'expired at'
    */
-  async refreshToken(token_response:any) {
-    let at = token_response["access_token"]
+  async refreshToken(token_data:any) {
+    let at = getAccessTokenFromTokenData(token_data)
 
     return await axios.get("https://graph.facebook.com/oauth/access_token", {
       params: {
@@ -71,8 +72,8 @@ export class Facebook extends OAuth2 {
   /**
    * https://developers.facebook.com/docs/facebook-login/permissions/requesting-and-revoking/#checking
    */
-  async __checkUserPermissions(token_response:any) {
-    let at = token_response["access_token"]
+  async __checkUserPermissions(token_data:any) {
+    let at = getAccessTokenFromTokenData(token_data)
 
     try {
       const { data } = await axios.get(`https://graph.facebook.com/me/permissions`, {
@@ -88,7 +89,7 @@ export class Facebook extends OAuth2 {
   }
 
   async getUserInfo(token_data:any) {
-    const access_token = token_data["access_token"]
+    const access_token = getAccessTokenFromTokenData(token_data)
     const { data } = await axios.get("https://graph.facebook.com/me", {
       params: { access_token: access_token }
     })
@@ -105,7 +106,7 @@ export class Facebook extends OAuth2 {
   }
 
   async makeApiRequest(token_data:any, method:string, url:string, req_data?:any): Promise<any> {
-    const access_token = token_data["access_token"]
+    const access_token = getAccessTokenFromTokenData(token_data)
     
     return await makeApiRequest(method, url, {
       baseURL: "https://graph.facebook.com",
@@ -140,4 +141,8 @@ export function isInvalidToken(e:AxiosError) {
 function isErrorSubcode(e:AxiosError, subcode:number) {
   const error = e.response?.data.error
   return error.code == 190 && error.error_subcode == subcode
+}
+
+export function getAccessTokenFromTokenData(token_data:any) {
+  return getAccessTokenFromTokenDataSimple(token_data)
 }

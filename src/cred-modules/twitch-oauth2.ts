@@ -3,6 +3,7 @@ import * as querystring from "querystring"
 
 import { OAuth2 } from "~/src/cred-module-base/oauth2-base"
 import { makeApiRequest } from "~/src/lib/api-request"
+import { getAccessTokenFromTokenDataSimple } from "~/src/lib/utility"
 
 export class Twitch extends OAuth2 {
   constructor(client_id:string, client_secret:string, redirect_uri:string) {
@@ -37,19 +38,20 @@ export class Twitch extends OAuth2 {
     )
   }
 
-  async revokeToken(token_response:any) {
+  async revokeToken(token_data:any) {
+    const access_token = getAccessTokenFromTokenData(token_data)
     return await axios.post("https://id.twitch.tv/oauth2/revoke", null, {
       params: {
         client_id: this.cred.client_id,
-        token: token_response["access_token"]
+        token: access_token
       }
     })
   }
   
-  async refreshToken(token_response:any) {
+  async refreshToken(token_data:any) {
     const data = querystring.stringify({
       grant_type: "refresh_token",
-      refresh_token: token_response["refresh_token"],
+      refresh_token: token_data["refresh_token"],
       client_id: this.cred.client_id,
       client_secret: this.cred.client_secret
     })
@@ -73,7 +75,7 @@ export class Twitch extends OAuth2 {
   }
 
   async makeApiRequest(token_data:any, method:string, url:string, req_data?:any): Promise<any> {
-    const access_token = token_data["access_token"]
+    const access_token = getAccessTokenFromTokenData(token_data)
     
     /**
      * Different apis seems to have different conventions. YouTube uses `headers` and
@@ -94,4 +96,8 @@ export class Twitch extends OAuth2 {
  */
 export function isTokenInvalidOrExpired(e:AxiosError) {
   return e.response?.status ==  401
+}
+
+export function getAccessTokenFromTokenData(token_data:any) {
+  return getAccessTokenFromTokenDataSimple(token_data)
 }

@@ -3,6 +3,7 @@ import * as querystring from "querystring"
 
 import { OAuth2 } from "~/src/cred-module-base/oauth2-base"
 import { makeApiRequest } from "~/src/lib/api-request"
+import { getAccessTokenFromTokenDataSimple } from "~/src/lib/utility"
 
 export class Bitbucket extends OAuth2 {
   oauth2_request:any
@@ -37,14 +38,14 @@ export class Bitbucket extends OAuth2 {
     )
   }
 
-  async revokeToken(token_response:any) {
+  async revokeToken(token_data:any) {
     return {
       redirect_url: "https://bitbucket.org/account"
     };
   }
   
-  async refreshToken(token_response:any) {
-    let refresh_token = token_response["refresh_token"]
+  async refreshToken(token_data:any) {
+    let refresh_token = token_data["refresh_token"]
     let url = new URL("https://bitbucket.org/site/oauth2/access_token")
     let fields = querystring.stringify({
       grant_type: "refresh_token",
@@ -60,7 +61,7 @@ export class Bitbucket extends OAuth2 {
   }
 
   async getUserInfo(token_data:any) {
-    const access_token = token_data["access_token"]
+    const access_token = getAccessTokenFromTokenData(token_data)
     const { data } = await axios.get("https://api.bitbucket.org/2.0/user", {
       headers: {
         Authorization: `Bearer ${access_token}`
@@ -79,7 +80,7 @@ export class Bitbucket extends OAuth2 {
   }
 
   async makeApiRequest(token_data:any, method:string, url:string, req_data?:any): Promise<any> {
-    const access_token = token_data["access_token"]
+    const access_token = getAccessTokenFromTokenData(token_data)
     
     return await makeApiRequest(method, url, {
       baseURL: "https://api.bitbucket.org/2.0/",
@@ -99,4 +100,8 @@ export function isTokenInvalidOrExpired(e:AxiosError) {
   }
 
   return false
+}
+
+export function getAccessTokenFromTokenData(token_data:any) {
+  return getAccessTokenFromTokenDataSimple(token_data)
 }

@@ -49,14 +49,14 @@ export abstract class OAuthBaseClass {
    * Return axios response instead of `{ data }`. The client code should know about this. Else,
    * the module can return `{ data, raw_response }` or something. 
    * 
-   * @param token_response 
+   * @param token_data 
    */
-  public abstract refreshToken(token_response:object):Promise<AxiosResponse|undefined|any>;
+  public abstract refreshToken(token_data:any):Promise<AxiosResponse|undefined|any>;
   /**
    * Services like 'bitbucket' doesn't have a revoke API. User needs to invalidate it from a
    * user setting page on the service.
    */
-  public abstract revokeToken(token_response:object):Promise<any|{redirect_url: string}>;
+  public abstract revokeToken(token_data:any):Promise<any|{redirect_url: string}>;
 
   /**
    * 2020-03-02 23:54
