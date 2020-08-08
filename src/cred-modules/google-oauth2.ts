@@ -89,6 +89,13 @@ export class Google extends OAuth2 {
   }
 
   async refreshToken(token_data:any) {
+    if("refresh_token" in token_data == false) {
+      console.warn(
+        `Google oauth. The 'refresh_token' property is missing from the token data.`,
+        `May require revoking the access from Google 'authorized apps' then authenticating again.`
+      )
+    }
+    
     let refresh_token = token_data["refresh_token"]
 
     /**
