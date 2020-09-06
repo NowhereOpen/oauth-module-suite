@@ -185,6 +185,33 @@ export function getAccessTokenFromTokenData(token_data:any) {
   return getAccessTokenFromTokenDataSimple(token_data)
 }
 
+export function isRefreshTokenError(e:AxiosError) {
+  if(e.response!.status == 400) {
+    /**
+    2020-09-06 16:14
+    
+    Very similar to Facebook response.
+    
+    ```
+    {
+      error: {
+        message: 'Invalid OAuth 2.0 Access Token',
+        type: 'IGApiException',
+        code: 190,
+        error_data: {},
+        fbtrace_id: '...'
+      }
+    }
+    ```
+    
+    I did not modify `error_data` to be `{}`
+    
+    400 error
+     */
+    return true
+  }
+}
+
 async function main() {
   const instance = new Instagram(<string>process.env.CLIENT_ID, <string>process.env.CLIENT_SECRET, "https://localhost:3000/oauth/instagram/callback")
 
@@ -224,4 +251,4 @@ async function main() {
     console.dir(response, { depth: 6 })
   }
 }
-main()
+// main()

@@ -166,3 +166,23 @@ export function isTokenInvalidOrExpired(e:AxiosError) {
 export function getAccessTokenFromTokenData(token_data:any) {
   return getAccessTokenFromTokenDataSimple(token_data)
 }
+
+export function isRefreshTokenError(e:AxiosError) {
+  if(e.response!.status == 400) {
+    /**
+    2020-09-06 16:09
+    
+    With refresh_token that was revoked from Google instead of through the revoke method.
+    
+    ```
+    {
+      error: 'invalid_grant',
+      error_description: 'Token has been expired or revoked.'
+    }
+    ```
+    
+    400 error
+     */
+    return true
+  }
+}

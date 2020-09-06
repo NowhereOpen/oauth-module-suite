@@ -105,3 +105,23 @@ export function isTokenInvalidOrExpired(e:AxiosError) {
 export function getAccessTokenFromTokenData(token_data:any) {
   return getAccessTokenFromTokenDataSimple(token_data)
 }
+
+export function isRefreshTokenError(e:AxiosError) {
+  if(e.response!.status == 400) {
+    /**
+    2020-09-06 15:50
+    
+    https://developer.atlassian.com/cloud/bitbucket/oauth-2/
+    
+    Cannot find error status detail.
+    
+    ```
+    {
+      error_description: 'Invalid refresh_token',
+      error: 'invalid_request'
+    }
+    ```
+     */
+    return true
+  }
+}

@@ -101,3 +101,22 @@ export function isTokenInvalidOrExpired(e:AxiosError) {
 export function getAccessTokenFromTokenData(token_data:any) {
   return getAccessTokenFromTokenDataSimple(token_data)
 }
+
+
+export function isRefreshTokenError(e:AxiosError) {
+  if(e.response!.status == 400) {
+    /**
+    2020-09-06 17:05
+    
+    400 error
+    
+    ```
+    { status: 400, message: 'Invalid refresh token' }
+
+    ```
+    
+    for both gibberish and token revoked from `https://www.twitch.tv/settings/connections`
+     */
+    return true
+  }
+}

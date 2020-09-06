@@ -38,11 +38,12 @@ export class Github extends OAuth2 {
 
   async revokeToken(token_data:any) {
     const access_token = getAccessTokenFromStrTokenData(token_data)
-    return await axios.delete(`https://api.github.com/applications/${this.cred.client_id}/tokens/${access_token}`, {
+    return await axios.delete(`https://api.github.com/applications/${this.cred.client_id}/tokens`, {
       auth: {
         username: this.cred.client_id,
         password: this.cred.client_secret
-      }
+      },
+      params: { access_token }
     })
   }
 
@@ -51,7 +52,7 @@ export class Github extends OAuth2 {
    */
   async refreshToken(token_data:any) {
     const access_token = getAccessTokenFromStrTokenData(token_data)
-    return await axios.get(`https://api.github.com/applications/${this.cred.client_id}/tokens/${access_token}`, {
+    return await axios.post(`https://api.github.com/applications/${this.cred.client_id}/tokens`, { access_token }, {
       auth: {
         username: this.cred.client_id,
         password: this.cred.client_secret
@@ -117,4 +118,25 @@ export function getAccessTokenFromTokenData(token_data:any) {
  */
 export function isTokenInvalidOrExpired(e:AxiosError) {
   return e.response?.status == 401
+}
+
+export function isRefreshTokenError(e:AxiosError) {
+  if(e.response!.status == 404) {
+    /**
+    2020-09-06 16:03
+    ```
+    {
+      message: 'Not Found',
+      documentation_url: 'https://docs.github.com/rest/reference/apps#check-an-authorization'
+    }
+    ```
+    
+    404 error. But note that github access token doesn't expire. And that the url used in the refresh
+    token is actually called "Check a token":
+    
+      - https://developer.github.com/v3/apps/oauth_applications/#check-a-token
+      
+     */
+    return true
+  }
 }
