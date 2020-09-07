@@ -61,7 +61,7 @@ export abstract class RefreshTokenIfFailTask {
    * @param refresh_token_result 
    * @param token_data 
    */
-  abstract onRefreshToken(refresh_token_result:any, token_data?:any):Promise<void>
+  abstract onRefreshToken(refresh_token_response:any, token_data?:any):Promise<void>
   /**
    * 2020-05-14 09:37
    * COULD use the token_data returned by `this.getTokenData`
@@ -89,11 +89,14 @@ export abstract class RefreshTokenIfFailTask {
           this.output.error_task_first_try = e
         }
         else {
-          const refresh_token_result = await this.refreshToken(token_data)
-          await this.onRefreshToken(refresh_token_result, token_data)
+          await this.refreshToken(token_data)
+          // No error from refreshing token
+          if(this.output.error_refresh_token == undefined) {
+            await this.onRefreshToken(this.output.refresh_token_response, token_data)
           
-          this.is_first_try = false
-          return await this.refreshTokenIfFail() 
+            this.is_first_try = false
+            return await this.refreshTokenIfFail() 
+          }
         }
       }
     }
