@@ -18,6 +18,7 @@ export type RefreshTokenIfFailOutput<T=any> = {
   error_task_after_refresh: undefined | any
   refresh_token_response: undefined | any
   result:T
+  is_return_on_first_try_error: undefined|boolean
 }
 
 export type GetTokenData = () => Promise<any>|any
@@ -30,7 +31,8 @@ export abstract class RefreshTokenIfFailTask {
     error_refresh_token: undefined,
     error_task_after_refresh: undefined,
     refresh_token_response: undefined,
-    result: undefined
+    result: undefined,
+    is_return_on_first_try_error: undefined
   }
 
   is_first_try = true
@@ -85,10 +87,9 @@ export abstract class RefreshTokenIfFailTask {
       }
       // if-else: First try
       else {
-        if((this.returnOnFirstTryError(e)) == true) {
-          this.output.error_task_first_try = e
-        }
-        else {
+        this.output.error_task_first_try = e
+        this.output.is_return_on_first_try_error = this.returnOnFirstTryError(e)
+        if(this.output.is_return_on_first_try_error == false) {
           await this.refreshToken(token_data)
           // No error from refreshing token
           if(this.output.error_refresh_token == undefined) {
