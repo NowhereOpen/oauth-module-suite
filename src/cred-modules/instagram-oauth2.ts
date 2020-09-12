@@ -11,7 +11,7 @@
  * 
  *   - https://developers.facebook.com/docs/instagram-basic-display-api/reference
  */
-
+import _ from "lodash"
 import axios, { AxiosError } from "axios"
 
 import { OAuth2 } from "~/src/cred-module-base/oauth2-base"
@@ -151,6 +151,10 @@ export class Instagram extends OAuth2 {
       params: { access_token }
     }, req_data)
   }
+  
+  errorCanBeFixedByRefreshToken(e:AxiosError) {
+    return isTokenExpired(e) || isInvalidToken(e)
+  }
 }
 
 /**
@@ -168,18 +172,18 @@ export class Instagram extends OAuth2 {
  */
 //
 
-// export function isTokenExpired(e:AxiosError) {
-//   return isErrorSubcode(e, 436)
-// }
+export function isTokenExpired(e:AxiosError) {
+  return isErrorSubcode(e, 436)
+}
 
-// export function isInvalidToken(e:AxiosError) {
-//   return isErrorSubcode(e, 460)
-// }
+export function isInvalidToken(e:AxiosError) {
+  return isErrorSubcode(e, 460)
+}
 
-// function isErrorSubcode(e:AxiosError, subcode:number) {
-//   const error = e.response?.data.error
-//   return error.code == 190 && error.error_subcode == subcode
-// }
+function isErrorSubcode(e:AxiosError, subcode:number) {
+  const error = e.response?.data.error
+  return error.code == 190 && error.error_subcode == subcode
+}
 
 export function getAccessTokenFromTokenData(token_data:any) {
   return getAccessTokenFromTokenDataSimple(token_data)

@@ -1,3 +1,4 @@
+import _ from "lodash"
 import axios, { AxiosError } from "axios"
 import * as querystring from "querystring"
 
@@ -88,6 +89,10 @@ export class Twitch extends OAuth2 {
         "Client-Id": this.cred.client_id
       },
     }, req_data)
+  }
+  
+  errorCanBeFixedByRefreshToken(e:AxiosError) {
+    return _.get(e, "response.status") == 401
   }
 }
 

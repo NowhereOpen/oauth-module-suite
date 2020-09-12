@@ -1,3 +1,4 @@
+import _ from "lodash"
 import axios, { AxiosError } from "axios"
 import * as querystring from "querystring"
 
@@ -147,6 +148,10 @@ export class Google extends OAuth2 {
         Authorization: `Bearer ${access_token}`
       }
     }, req_data)
+  }
+  
+  errorCanBeFixedByRefreshToken(e:AxiosError) {
+    return _.get(e, "response.status") == 401
   }
 }
 

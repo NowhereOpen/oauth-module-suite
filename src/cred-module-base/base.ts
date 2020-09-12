@@ -22,6 +22,7 @@ export abstract class OAuthBaseClass {
   oauth_type:OAuthType
   service_id:string
   service_name:string
+  can_refresh_token = true
   constructor(service_id:string, service_name:string, oauth_type:OAuthType) {
     this.service_id = service_id
     this.service_name = service_name
@@ -51,7 +52,14 @@ export abstract class OAuthBaseClass {
    * 
    * @param token_data 
    */
-  public abstract refreshToken(token_data:any):Promise<AxiosResponse|undefined|any>;
+  public async refreshToken(token_data:any):Promise<AxiosResponse|undefined|any> {
+    if(this.can_refresh_token == false) {
+      console.log(`This service ${this.service_id} doesn't have a refresh token api.`)
+    }
+    else {
+      throw Error(`Method refreshToken is not defined, or set 'can_refresh_token = false'`)
+    }
+  }
   /**
    * Services like 'bitbucket' doesn't have a revoke API. User needs to invalidate it from a
    * user setting page on the service.
@@ -84,4 +92,20 @@ export abstract class OAuthBaseClass {
   public abstract resDataToUserInfo(res_data:any): UserInfo
 
   public abstract makeApiRequest(token_data:any, method:string, url:string, req_data?:any): Promise<any>
+  
+  /**
+   * 2020-09-12 15:35
+   * 
+   * `true` will make `refresh token` request. `false` will return on first try when there is an error.
+   * 
+   * @param error `any` type. Most use `AxiosError` but some don't (eg. twitter)
+   */
+  errorCanBeFixedByRefreshToken(error:any):boolean {
+    if(this.can_refresh_token == false) {
+      return false
+    }
+    else {
+      throw Error(`'errorCanBeFixedByRefreshToken' is not implemented for ${this.service_id}.`)
+    }
+  }
 }

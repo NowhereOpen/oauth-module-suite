@@ -24,6 +24,13 @@ export class Trello extends OAuth1a {
       },
       { "scope": "read,write", "expiration": "30days", "name": "Testing app" }
     )
+    /**
+     * 2020-09-11 23:03
+     * Copied from the log message printed when calling refreshToken for trello:
+     * 
+     * Trello doesn't require refreshing if access token was retrieved with 'expiration=never'. Please check the code or setting.
+     */
+    this.can_refresh_token = false
   }
 
   async revokeToken(token_data:any) {
@@ -34,12 +41,6 @@ export class Trello extends OAuth1a {
         token: access_token, key: this.cred.consumer_key
       }
     })
-  }
-
-  refreshToken() {
-    // Cannot refresh. User needs to re-authorize.
-    console.log("Trello doesn't require refreshing if access token was retrieved with 'expiration=never'. Please check the code or setting.")
-    return Promise.resolve(undefined)
   }
 
   async getUserInfo(token_data:any) {

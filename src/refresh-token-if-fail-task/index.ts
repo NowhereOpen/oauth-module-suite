@@ -18,7 +18,8 @@ export type RefreshTokenIfFailOutput<T=any> = {
   error_task_after_refresh: undefined | any
   refresh_token_response: undefined | any
   result:T
-  is_return_on_first_try_error: undefined|boolean
+  error_can_be_fixed_by_refresh_token: undefined|boolean
+  should_refresh_token: undefined|boolean
 }
 
 export type GetTokenData = () => Promise<any>|any
@@ -32,7 +33,8 @@ export abstract class RefreshTokenIfFailTask {
     error_task_after_refresh: undefined,
     refresh_token_response: undefined,
     result: undefined,
-    is_return_on_first_try_error: undefined
+    error_can_be_fixed_by_refresh_token: undefined,
+    should_refresh_token: undefined
   }
 
   is_first_try = true
@@ -84,20 +86,28 @@ export abstract class RefreshTokenIfFailTask {
       // if-else: Second try after refreshing
       if(this.is_first_try == false) {
         this.output.error_task_after_refresh = e
+        this.output.should_refresh_token = true
       }
       // if-else: First try
       else {
         this.output.error_task_first_try = e
-        this.output.is_return_on_first_try_error = this.returnOnFirstTryError(e)
-        if(this.output.is_return_on_first_try_error == false) {
-          await this.refreshToken(token_data)
-          // No error from refreshing token
-          if(this.output.error_refresh_token == undefined) {
-            await this.onRefreshToken(this.output.refresh_token_response, token_data)
-          
-            this.is_first_try = false
-            return await this.refreshTokenIfFail() 
+        this.output.error_can_be_fixed_by_refresh_token = this.cred_module.errorCanBeFixedByRefreshToken(e)
+        
+        if(this.cred_module.can_refresh_token == true) {
+          if(this.output.error_can_be_fixed_by_refresh_token) {
+            await this.refreshToken(token_data)
+            // No error from refreshing token
+            if(this.output.error_refresh_token == undefined) {
+              await this.onRefreshToken(this.output.refresh_token_response, token_data)
+            
+              this.is_first_try = false
+              return await this.refreshTokenIfFail() 
+            }
           }
+        }
+        // if-else: this.cred_module.can_refresh_token == false
+        else {
+          this.output.should_refresh_token = true
         }
       }
     }
@@ -129,16 +139,5 @@ export abstract class RefreshTokenIfFailTask {
       this.output.error_refresh_token = e
       return
     }
-  }
-
-  /**
-   * 2020-09-06 18:12
-   * 
-   * With `false` it will alwasy attempt to refresht the token and perform the task again.
-   * 
-   * Return true when you know the error is from un-refreshable error (eg, by calling `isTokenInvalidOrExpired`)
-   */
-  returnOnFirstTryError(e:Error):boolean {
-    return false
   }
 }

@@ -1,3 +1,4 @@
+import _ from "lodash"
 import TwitterModule from "twitter";
 
 import { OAuth1a } from "~/src/cred-module-base/oauth1-base"
@@ -32,6 +33,7 @@ export class Twitter extends OAuth1a {
        */
       { "force_login": "false", "screen_name": "GYST test" }
     )
+    this.can_refresh_token = false
   }
 
   async revokeToken(token_data:any) {
@@ -55,12 +57,6 @@ export class Twitter extends OAuth1a {
         return resolve(response)
       })
     })
-  }
-
-  refreshToken() {
-    // Does not expire
-    console.log("Twitter oauth module refreshToken. Twitter has no refresh token API.")
-    return Promise.resolve(undefined)
   }
 
   async getUserInfo(token_data:any) {
@@ -100,6 +96,10 @@ export class Twitter extends OAuth1a {
      * google calednar uses `params`, for example.
      */
     return await makeRequest(<"get"|"post"|"stream">method, url, twitter_cred, req_data.params)
+  }
+  
+  errorCanBeFixedByRefreshToken(response:any) {
+    return _.get(response, "[0].code") == 89
   }
 }
 
@@ -145,8 +145,7 @@ export async function makeRequest(method:"get"|"post"|"stream", url:string, twit
  * @param response The response returned by the `twitter` module
  */
 export function isTokenInvalid(response:any) {
-  if(Array.isArray(response) && response.length > 0 && "code" in response[0] && response[0].code == 89) return true
-  return false
+  return _.get(response, "[0].code") == 89
 }
 
 export function getAccessTokenFromTokenData(token_data:any) {

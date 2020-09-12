@@ -34,6 +34,7 @@ export class Github extends OAuth2 {
         is_oauth_header: false
       }
     )
+    this.can_refresh_token = false
   }
 
   async revokeToken(token_data:any) {
@@ -50,15 +51,15 @@ export class Github extends OAuth2 {
   /**
    * It's said that the github access_token don't expire but the following request works, response including the same token.
    */
-  async refreshToken(token_data:any) {
-    const access_token = getAccessTokenFromStrTokenData(token_data)
-    return await axios.post(`https://api.github.com/applications/${this.cred.client_id}/tokens`, { access_token }, {
-      auth: {
-        username: this.cred.client_id,
-        password: this.cred.client_secret
-      }
-    })
-  }
+  // async refreshToken(token_data:any) {
+  //   const access_token = getAccessTokenFromStrTokenData(token_data)
+  //   return await axios.post(`https://api.github.com/applications/${this.cred.client_id}/tokens`, { access_token }, {
+  //     auth: {
+  //       username: this.cred.client_id,
+  //       password: this.cred.client_secret
+  //     }
+  //   })
+  // }
 
   async getUserInfo(token_data:any) {
     const access_token = getAccessTokenFromStrTokenData(token_data)

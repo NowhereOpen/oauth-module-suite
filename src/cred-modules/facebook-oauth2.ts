@@ -113,6 +113,10 @@ export class Facebook extends OAuth2 {
       params: { access_token }
     }, req_data)
   }
+  
+  errorCanBeFixedByRefreshToken(e:AxiosError) {
+    return isTokenExpired(e) || isInvalidToken(e)
+  }
 }
 
 /**

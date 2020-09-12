@@ -1,3 +1,4 @@
+import _ from "lodash"
 import axios, { AxiosError } from "axios"
 import * as querystring from "querystring"
 
@@ -120,6 +121,10 @@ export class Reddit extends OAuth2 {
         "User-Agent": this.user_agent
       },
     }, req_data)
+  }
+  
+  errorCanBeFixedByRefreshToken(e:AxiosError) {
+    return _.get(e, "response.status") == 401
   }
 }
 
